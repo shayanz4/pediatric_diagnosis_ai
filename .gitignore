@@ -1,0 +1,185 @@
+# Compiled source #
+###################
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+#######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python #
+##########
+*.py[cod]
+*.pyo
+__pycache__/
+*.env
+*.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook #
+####################
+.ipynb_checkpoints
+
+# Virtualenv #
+##############
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Byte-compiled / optimized / DLL files #
+#########################################
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging #
+############################
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports #
+################################
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# PyInstaller #
+###############
+*.manifest
+*.spec
+
+# mypy #
+########
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre #
+########
+.pyre/
+
+# C extensions #
+################
+*.so
+
+# Environments #
+################
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings #
+###########################
+.spyderproject
+.spyproject
+
+# Rope project settings #
+##########################
+.ropeproject
+
+# mkdocs documentation #
+#########################
+/site
+
+# PyBuilder #
+#############
+target/
+
+# IPython #
+###########
+profile_default/
+ipython_config.py
+
+# Celery stuff #
+################
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files #
+#########################
+*.sage.py
+
+# Encrypted files #
+###################
+*.key
+
+# dotenv #
+##########
+.env
+.env.*
+
+# virtualenv #
+##############
+*.env
+*.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Editor directories and files #
+################################
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.tmproj
+*.project
+*.code-workspace
