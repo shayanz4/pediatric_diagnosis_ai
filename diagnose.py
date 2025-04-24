@@ -2,7 +2,7 @@ import os
 from pyswip import Prolog
 
 # Symptom list
-symptoms = ["fever", "cough", "fatigue", "runny_nose", "rash"]
+symptoms = ["fever", "cough", "fatigue", "runny_nose", "rashes"]
 
 # Initialize Prolog
 prolog = Prolog()
