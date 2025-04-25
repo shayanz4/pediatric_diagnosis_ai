@@ -4,6 +4,7 @@ from pyswip import Prolog
 # Initialize Prolog
 prolog = Prolog()
 prolog.consult("diagnosis.pl")
+prolog.consult("dcg_rules.pl")
 
 # Rule lengths for probability calculation
 rule_lengths = {
@@ -52,6 +53,14 @@ department_map = {
     "whooping_cough": "Pulmonology",
     "fifth_disease": "Dermatology"
 }
+
+# Parse symptoms using Prolog DCG
+def parse_symptoms(input_text):
+    query = f'parse_symptoms("{input_text}", Symptoms)'
+    result = list(prolog.query(query))
+    if result:
+        return result[0]["Symptoms"]
+    return []
 
 # Tiered symptom groups
 tier1_symptoms = ["fever", "cough", "runny_nose", "rash", "vomiting", "diarrhea", "fatigue"]
@@ -147,6 +156,8 @@ def tier1_screening(mode):
                 continue
             user_responses[symptom] = response
             if response == "y":
+                # Assert fact in Prolog
+                print(f"Asserting fact: has_symptom({symptom}, 1)")  # Debugging
                 prolog.assertz(f"has_symptom({symptom}, 1)")
     elif mode == "2":
         # Natural language input mode
@@ -155,12 +166,14 @@ def tier1_screening(mode):
         for symptom in tier1_symptoms:
             if symptom.replace("_", " ") in symptoms_input:
                 user_responses[symptom] = "y"
+                print(f"Asserting fact: has_symptom({symptom}, 1)")  # Debugging
                 prolog.assertz(f"has_symptom({symptom}, 1)")
             else:
                 user_responses[symptom] = "n"
     
     update_progress(15)
 
+# Tier 2: Adaptive Questioning
 def tier2_questioning(mode):
     print("\nTier 2: Adaptive Questioning")
     
@@ -174,10 +187,12 @@ def tier2_questioning(mode):
                     if check_conflict(sanitized_question, response):
                         continue
                     user_responses[question] = response
+                    print(f"Asserting fact: user_response({sanitized_question}, '{response}')")  # Debugging
                     prolog.assertz(f"user_response({sanitized_question}, '{response}')")
             elif mode == "2":
                 # Natural language input mode
                 user_input = input(f"Describe {symptom.replace('_', ' ')} in your own words: ").strip().lower()
+                print(f"Processing natural language input for {symptom}: {user_input}")  # Debugging
                 # Process the natural language input for the current symptom
                 process_natural_language_input(symptom, user_input)
 
@@ -202,6 +217,12 @@ def tier3_questioning():
 # Diagnosis and Recommendation
 def diagnose():
     print("\nDiagnosis Summary")
+    print("Debug: Facts in Prolog database:")
+    for fact in prolog.query("listing(user_response)."):
+        print(fact)
+    for fact in prolog.query("listing(has_symptom)."):
+        print(fact)
+
     diagnoses = []
     total_weight = 0
     for result in prolog.query("diagnosis(Disease)."):
@@ -218,7 +239,7 @@ def diagnose():
         department = department_map.get(most_probable, "General Pediatrics")
         print(f"\nBased on your symptoms, we recommend consulting the {department} department. We hope you are satisfied with our services!")
     else:
-        print("No specific diagnosis matched. Please consult a healthcare provider.")
+        print("No specific diagnosis matched. Please consult a healthcare provider or try again.")
 
 # Main workflow
 if __name__ == "__main__":

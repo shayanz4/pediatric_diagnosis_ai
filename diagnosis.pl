@@ -57,3 +57,11 @@ diagnosis(rsv) :-
     has_symptom(cough, _),
     user_response(wheezing, yes).
 
+% Probability calculation
+get_disease_probability(Disease, SelectedSymptoms, Prob) :-
+    disease(Disease, DiseaseSymptoms),
+    intersection(SelectedSymptoms, DiseaseSymptoms, MatchedSymptoms),
+    length(MatchedSymptoms, MatchCount),
+    length(DiseaseSymptoms, TotalCount),
+    ( TotalCount > 0 -> Prob is (MatchCount / TotalCount)*100 ; Prob is 0 ).
+

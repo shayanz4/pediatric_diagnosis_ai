@@ -1,24 +1,43 @@
-% DCG Rules for Fever Descriptions
-fever_description --> [high, grade], {assert(user_response(high_grade_fever, yes))}.
-fever_description --> [persistent], {assert(user_response(persistent_fever, yes))}.
-fever_description --> [chills], {assert(user_response(chills, yes))}.
+% Tokenize input string into a list of words
+split_into_words(Str, Words) :-
+    string_lower(Str, LowerStr),  % Convert to lowercase for consistent matching
+    split_string(LowerStr, " ,.", "", RawWords),  % Split by spaces, commas, or periods
+    exclude(==( ""), RawWords, Words).  % Remove empty strings
 
-% DCG Rules for Rash Descriptions
-rash_description --> [localized], {assert(user_response(rash_localized, yes))}.
-rash_description --> [widespread], {assert(user_response(rash_widespread, yes))}.
-rash_description --> [itchy], {assert(user_response(itchy_rash, yes))}.
+% Define parse_symptoms/2 which uses the DCG
+parse_symptoms(Input, UniqueSymptoms) :-
+    split_into_words(Input, Words),
+    findall(Symptoms, phrase(sentence(Symptoms), Words), AllSymptoms),
+    flatten(AllSymptoms, FlattenedSymptoms),
+    sort(FlattenedSymptoms, UniqueSymptoms).
 
-% DCG Rules for Cough Descriptions
-cough_description --> [dry], {assert(user_response(dry_cough, yes))}.
-cough_description --> [wheezing], {assert(user_response(wheezing, yes))}.
-cough_description --> [worsens, at, night], {assert(user_response(worsens_at_night, yes))}.
+% DCG to parse sentence and find symptoms
+sentence(Symptoms) --> find_symptoms(Symptoms).
 
-% Parsing Predicates
-process_fever_input(Input) :-
-    phrase(fever_description, Input).
+find_symptoms([Symptom|Rest]) --> symptom(Symptom), find_symptoms(Rest).
+find_symptoms([]) --> [].
 
-process_rash_input(Input) :-
-    phrase(rash_description, Input).
+% DCG rules for fever
+symptom(high_grade_fever) --> words_before, ["high"], words_between, ["grade"], words_between, ["fever"], words_after.
+symptom(persistent_fever) --> words_before, ["persistent"], words_between, ["fever"], words_after.
+symptom(chills) --> words_before, ["chills"], words_after.
 
-process_cough_input(Input) :-
-    phrase(cough_description, Input).
+% DCG rules for rash
+symptom(itchy_rash) --> words_before, ["itchy"], words_between, ["rash"], words_after.
+symptom(localized_rash) --> words_before, ["localized"], words_between, ["rash"], words_after.
+symptom(widespread_rash) --> words_before, ["widespread"], words_between, ["rash"], words_after.
+
+% DCG rules for cough
+symptom(dry_cough) --> words_before, ["dry"], words_between, ["cough"], words_after.
+symptom(wheezing) --> words_before, ["wheezing"], words_after.
+symptom(night_cough) --> words_before, ["cough"], words_between, ["worse"], words_between, ["at"], words_between, ["night"], words_after.
+
+% Allow unrelated words to appear before, between, or after symptoms
+words_before --> [].
+words_before --> [_], words_before.
+
+words_between --> [].
+words_between --> [_], words_between.
+
+words_after --> [].
+words_after --> [_], words_after.
