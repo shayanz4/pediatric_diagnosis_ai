@@ -63,7 +63,7 @@ def parse_symptoms(input_text):
     return []
 
 # Tiered symptom groups
-tier1_symptoms = ["fever", "cough", "runny_nose", "rash", "vomiting", "diarrhea", "fatigue"]
+tier1_symptoms = ["fever", "cough", "rash", "vomiting", "diarrhea", "runny_nose", "fatigue"]
 tier2_questions = {
     "fever": ["On a scale of 0-5, how severe is the fever?",
               "Describe the fever (e.g., high-grade, intermittent, low-grade):"],
@@ -82,7 +82,8 @@ tier3_triggers = {
     ("fever", "rash"): ["Did the rash spread from the face to the trunk? (y/n): ",
                         "Is the tongue red and bumpy like a 'strawberry'? (y/n): "],
     ("cough", "fever"): ["Is the child experiencing labored breathing? (y/n): "],
-    ("vomiting", "fatigue"): ["Did these symptoms begin after recent travel? (y/n): "]
+    ("vomiting", "diarrhea"): ["Did these symptoms begin after recent travel? (y/n): "],
+    ("fatigue", "runny_nose"): ["Did these symptoms begin after being in contact with someone who was sick? (y/n): "]
 }
 
 # Store user responses
