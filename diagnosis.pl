@@ -1,3 +1,4 @@
+:- [dcg_rules].
 :- dynamic user_response/2.
 :- dynamic has_symptom/2.
 

@@ -128,30 +128,58 @@ def check_conflict(symptom, new_response):
         return True
     return False
 
+def process_natural_language_input(symptom_type, user_input):
+    # Tokenize the user input into a list of words
+    tokens = user_input.lower().replace(",", "").replace(".", "").split()
+    prolog_query = f"process_{symptom_type}_input({tokens})"
+    print(f"Executing Prolog query: {prolog_query}")  # Debugging: See what query is sent
+    list(prolog.query(prolog_query))
+
 # Tier 1: Preliminary Screening
-def tier1_screening():
+def tier1_screening(mode):
     print("\nTier 1: Preliminary Screening")
-    for symptom in tier1_symptoms:
-        response = ask_typed_response(f"Do they have {symptom.replace('_', ' ')}? (y/n)")
-        if check_conflict(symptom, response):
-            continue
-        user_responses[symptom] = response
-        if response == "y":
-            prolog.assertz(f"has_symptom({symptom}, 1)")
+    
+    if mode == "1":
+        # Predefined options mode
+        for symptom in tier1_symptoms:
+            response = ask_typed_response(f"Do they have {symptom.replace('_', ' ')}? (y/n)")
+            if check_conflict(symptom, response):
+                continue
+            user_responses[symptom] = response
+            if response == "y":
+                prolog.assertz(f"has_symptom({symptom}, 1)")
+    elif mode == "2":
+        # Natural language input mode
+        symptoms_input = input("Describe any symptoms in your own words: ").strip().lower()
+        # Tokenize and process the input in Prolog
+        for symptom in tier1_symptoms:
+            if symptom.replace("_", " ") in symptoms_input:
+                user_responses[symptom] = "y"
+                prolog.assertz(f"has_symptom({symptom}, 1)")
+            else:
+                user_responses[symptom] = "n"
+    
     update_progress(15)
 
-def tier2_questioning():
+def tier2_questioning(mode):
     print("\nTier 2: Adaptive Questioning")
+    
     for symptom, questions in tier2_questions.items():
-        if user_responses.get(symptom) == "y":  # Adjusted for y/n responses
-            for question in questions:
-                response = ask_typed_response(question)
-                sanitized_question = sanitize_for_prolog(question)
-                if check_conflict(sanitized_question, response):
-                    continue
-                user_responses[question] = response
-                prolog.assertz(f"user_response({sanitized_question}, '{response}')")
-    update_progress(35)
+        if user_responses.get(symptom) == "y":  # Only proceed for relevant symptoms
+            if mode == "1":
+                # Predefined options mode
+                for question in questions:
+                    response = ask_typed_response(question)
+                    sanitized_question = sanitize_for_prolog(question)
+                    if check_conflict(sanitized_question, response):
+                        continue
+                    user_responses[question] = response
+                    prolog.assertz(f"user_response({sanitized_question}, '{response}')")
+            elif mode == "2":
+                # Natural language input mode
+                user_input = input(f"Describe {symptom.replace('_', ' ')} in your own words: ").strip().lower()
+                # Process the natural language input for the current symptom
+                process_natural_language_input(symptom, user_input)
 
 # Tier 3: Deep Adaptive Questioning
 def tier3_questioning():
@@ -194,13 +222,18 @@ def diagnose():
 
 # Main workflow
 if __name__ == "__main__":
-    tier1_screening()
-    tier2_questioning()
-    tier3_questioning()
+    print("\nWelcome to the Pediatric Diagnosis System!")
+    
+    # Ask whether to use DCG or predefined options for the entire process
+    mode = input("Would you like to use [1] predefined options or [2] natural language input (DCG)? (1/2): ").strip()
+    
+    # Validate the mode selection
+    if mode not in ["1", "2"]:
+        print("Invalid option. Please select 1 or 2.")
+        exit()
+    
+    # Start the diagnostic process
+    tier1_screening(mode)  # Pass the mode to Tier 1
+    tier2_questioning(mode)  # Pass the mode to Tier 2
+    tier3_questioning()  # Tier 3 remains unchanged for now
     diagnose()
-
-
-
-
-
-
