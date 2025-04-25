@@ -13,6 +13,7 @@ class DiagnosisEngine:
         self._reset_state()
 
     def _reset_state(self):
+        """Reset all Prolog state between diagnoses"""
         self.prolog.query("retractall(user_response(_, _)).")
         self.prolog.query("retractall(has_symptom(_, _)).")
 
@@ -24,7 +25,8 @@ class DiagnosisEngine:
             try:
                 result = list(self.prolog.query(query, maxresult=1))
                 return result[0]["S"] if result else []
-            except Exception:
+            except Exception as e:
+                print(f"DCG parsing error: {e}")
                 return []
         else:
             # For normal mode, simply split on comma or space as a simple heuristic.
@@ -33,12 +35,22 @@ class DiagnosisEngine:
             return [w for w in words if w in T1]
 
     def add_symptom(self, symptom: str, tier: int = 1):
-        self.prolog.assertz(f"has_symptom({symptom},{tier})")
+        """Add a symptom with its tier to the Prolog KB"""
+        try:
+            self.prolog.assertz(f"has_symptom({symptom},{tier})")
+        except Exception as e:
+            print(f"Error adding symptom {symptom}: {e}")
 
     def add_response(self, key: str, value: str):
-        self.prolog.assertz(f"user_response({key},'{value}')")
+        """Add a user response to the Prolog KB"""
+        try:
+            safe_value = value.replace("'", "''")  # Escape single quotes for Prolog
+            self.prolog.assertz(f"user_response({key},'{safe_value}')")
+        except Exception as e:
+            print(f"Error adding response {key}: {e}")
 
     def get_diagnosis(self) -> Tuple[List[Dict], Optional[str]]:
+        """Get diagnosis results based on symptoms and responses"""
         try:
             diagnoses = [d["Disease"] for d in self.prolog.query("diagnosis(Disease).")]
             # Filter and calculate based on RULE_LEN
@@ -56,10 +68,11 @@ class DiagnosisEngine:
             best = max(diagnoses, key=lambda d: RULE_LEN.get(d, 0))
             department = DEPT.get(best, "General Pediatrics")
             return results, department
-        except Exception:
+        except Exception as e:
+            print(f"Diagnosis error: {e}")
             return [], None
 
-# Predefined mode‐independent constants (you can adjust these as needed)
+# Predefined mode‐independent constants
 T1 = ["fever", "cough", "rash", "vomiting", "diarrhea", "runny_nose", "fatigue"]
 
 T2 = {
@@ -94,7 +107,8 @@ RULE_LEN = {
     "conjunctivitis": 3, "gastroenteritis": 4, "chickenpox": 4,
     "measles": 5, "mumps": 4, "rubella": 3, "scarlet_fever": 4,
     "roseola": 2, "rsv": 5, "croup": 4, "kawasaki_disease": 4,
-    "whooping_cough": 3, "fifth_disease": 3
+    "whooping_cough": 3, "fifth_disease": 3, "food_poisoning": 4,
+    "sinusitis": 4  # Added missing diseases from diagnosis.pl
 }
 
 DEPT = {
@@ -107,5 +121,6 @@ DEPT = {
     "rubella": "Infectious Disease", "scarlet_fever": "Infectious Disease",
     "roseola": "Pediatrics", "rsv": "Pulmonology", "croup": "Pulmonology",
     "kawasaki_disease": "Cardiology", "whooping_cough": "Pulmonology",
-    "fifth_disease": "Dermatology"
+    "fifth_disease": "Dermatology", "food_poisoning": "Gastroenterology",
+    "sinusitis": "ENT"  # Added missing departments
 }

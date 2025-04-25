@@ -2,81 +2,438 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pediatric Diagnosis System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pediatric AI Diagnostician</title>
     <link rel="stylesheet" href="/static/style.css">
-    <!-- Bootstrap CSS (CDN) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container my-4">
-    <h1 class="mb-4">Pediatric Diagnosis System</h1>
-    <!-- Tabs for mode selection -->
-    <ul class="nav nav-tabs" id="modeTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="normal-tab" data-bs-toggle="tab" data-bs-target="#normal-mode" type="button" role="tab">Normal Mode</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="dcg-tab" data-bs-toggle="tab" data-bs-target="#dcg-mode" type="button" role="tab">DCG Mode</button>
-        </li>
-    </ul>
-    <div class="tab-content" id="modeTabsContent">
-        <!-- Normal Mode Tab -->
-        <div class="tab-pane fade show active" id="normal-mode" role="tabpanel">
-            <div id="normal-mode-content" class="mt-4">
-                <div id="normal-tier1-section" class="section">
-                    <h3>Normal Mode: Tier 1</h3>
-                    <div class="form-group">
-                        <label for="normal-symptoms">Enter symptoms (comma or space separated):</label>
-                        <input type="text" id="normal-symptoms" class="form-control">
-                    </div>
-                    <button class="btn btn-primary mt-2" onclick="processNormalTier1()">Submit Tier 1</button>
-                </div>
-                <div id="normal-tier2-section" class="section d-none">
-                    <form id="normal-tier2-form"></form>
-                    <button class="btn btn-primary mt-2" onclick="processNormalTier2()">Submit Tier 2</button>
-                </div>
-                <div id="normal-tier3-section" class="section d-none">
-                    <form id="normal-tier3-form"></form>
-                    <button class="btn btn-primary mt-2" onclick="getNormalDiagnosis()">Get Diagnosis</button>
-                </div>
-                <div id="normal-results-section" class="section d-none">
-                    <h3>Diagnosis Results</h3>
-                    <div id="normal-diagnosis-results"></div>
-                    <div id="normal-department-suggestion"></div>
-                </div>
+    <h1>Pediatric AI Diagnostician</h1>
+
+    <div class="tab-container">
+        <button class="tab-link active" onclick="openTab(event, 'Normal')">Normal Mode (Checklist)</button>
+        <button class="tab-link" onclick="openTab(event, 'DCG')">DCG Mode (Natural Language)</button>
+    </div>
+
+    <!-- Normal Mode Tab -->
+    <div id="Normal" class="tab-content" style="display: block;">
+        <h2>Normal Diagnosis Mode</h2>
+        <!-- Tier 1: Symptom Checklist -->
+        <form id="normal-tier1-form">
+            <p>Select the symptoms observed:</p>
+            <div class="symptom-list">
+                {% for symptom in symptoms %}
+                <label>
+                    <input type="checkbox" name="symptoms" value="{{ symptom }}">
+                    {{ symptom.replace('_', ' ')|title }}
+                </label><br>
+                {% endfor %}
             </div>
+            <button type="submit">Submit Tier 1</button>
+        </form>
+        <div id="normal-tier1-result" class="result-box"></div>
+
+        <!-- Tier 2: Follow-up Questions -->
+        <div id="normal-tier2-div" style="display:none;">
+            <h3>Follow-up Questions (Tier 2)</h3>
+            <form id="normal-tier2-form">
+                <div id="normal-tier2-questions"></div>
+                <button type="submit">Submit Tier 2</button>
+            </form>
+            <div id="normal-tier2-result" class="result-box"></div>
         </div>
-        <!-- DCG Mode Tab -->
-        <div class="tab-pane fade" id="dcg-mode" role="tabpanel">
-            <div id="dcg-mode-content" class="mt-4">
-                <div id="dcg-tier1-section" class="section">
-                    <h3>DCG Mode: Tier 1</h3>
-                    <div class="form-group">
-                        <label for="dcg-symptoms">Describe symptoms:</label>
-                        <input type="text" id="dcg-symptoms" class="form-control">
-                    </div>
-                    <button class="btn btn-primary mt-2" onclick="processDcgTier1()">Submit Tier 1</button>
-                </div>
-                <div id="dcg-tier2-section" class="section d-none">
-                    <form id="dcg-tier2-form"></form>
-                    <button class="btn btn-primary mt-2" onclick="processDcgTier2()">Submit Tier 2</button>
-                </div>
-                <div id="dcg-tier3-section" class="section d-none">
-                    <form id="dcg-tier3-form"></form>
-                    <button class="btn btn-primary mt-2" onclick="getDcgDiagnosis()">Get Diagnosis</button>
-                </div>
-                <div id="dcg-results-section" class="section d-none">
-                    <h3>Diagnosis Results</h3>
-                    <div id="dcg-diagnosis-results"></div>
-                    <div id="dcg-department-suggestion"></div>
-                </div>
-            </div>
+
+        <!-- Tier 3: Additional Details -->
+        <div id="normal-tier3-div" style="display:none;">
+            <h3>Additional Details (Tier 3)</h3>
+            <form id="normal-tier3-form">
+                <div id="normal-tier3-questions"></div>
+                <button type="submit">Submit Tier 3</button>
+            </form>
+            <div id="normal-tier3-result" class="result-box"></div>
+        </div>
+
+        <!-- Final Diagnosis -->
+        <div id="normal-diagnosis-div" style="display:none;">
+            <button id="normal-diagnose-btn">Get Diagnosis</button>
+            <div id="normal-diagnosis-result" class="result-box"></div>
         </div>
     </div>
-</div>
 
-<!-- Bootstrap JS (CDN) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/static/script.js"></script>
+    <!-- DCG Mode Tab -->
+    <div id="DCG" class="tab-content" style="display:none;">
+        <h2>DCG Diagnosis Mode</h2>
+        <!-- Tier 1: Natural Language Description -->
+        <form id="dcg-tier1-form">
+            <p>Describe the symptoms (e.g., "patient has fever and cough"):</p>
+            <textarea name="symptoms" rows="4" cols="50" required></textarea><br>
+            <button type="submit">Submit Tier 1</button>
+        </form>
+        <div id="dcg-tier1-result" class="result-box"></div>
+
+        <!-- Tier 2: Follow-up Questions -->
+        <div id="dcg-tier2-div" style="display:none;">
+            <h3>Follow-up Questions (Tier 2)</h3>
+            <form id="dcg-tier2-form">
+                <div id="dcg-tier2-questions"></div>
+                <button type="submit">Submit Tier 2</button>
+            </form>
+            <div id="dcg-tier2-result" class="result-box"></div>
+        </div>
+
+        <!-- Tier 3: Additional Details -->
+        <div id="dcg-tier3-div" style="display:none;">
+            <h3>Additional Details (Tier 3)</h3>
+            <form id="dcg-tier3-form">
+                <div id="dcg-tier3-questions"></div>
+                <button type="submit">Submit Tier 3</button>
+            </form>
+            <div id="dcg-tier3-result" class="result-box"></div>
+        </div>
+
+        <!-- Final Diagnosis -->
+        <div id="dcg-diagnosis-div" style="display:none;">
+            <button id="dcg-diagnose-btn">Get Diagnosis</button>
+            <div id="dcg-diagnosis-result" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-link");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // --- Normal Mode Scripts (unchanged) ---
+
+        const tier1Form = document.getElementById('normal-tier1-form');
+        const tier1ResultDiv = document.getElementById('normal-tier1-result');
+        const tier2Div = document.getElementById('normal-tier2-div');
+
+        tier1Form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            tier1ResultDiv.textContent = 'Processing Tier 1...';
+            const formData = new FormData(tier1Form);
+            const selectedSymptoms = formData.getAll('symptoms');
+            try {
+                const response = await fetch('/normal/process_tier1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ symptoms: selectedSymptoms })
+                });
+                const result = await response.json();
+                if(response.ok){
+                    tier1ResultDiv.textContent = "Tier 1 completed.";
+                    if(result.tier2_questions && Object.keys(result.tier2_questions).length > 0){
+                        const tier2QuestionsDiv = document.getElementById('normal-tier2-questions');
+                        tier2QuestionsDiv.innerHTML = "";
+                        for(const [symptom, question] of Object.entries(result.tier2_questions)){
+                            const label = document.createElement('label');
+                            label.textContent = question;
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.name = symptom + "_detail";
+                            tier2QuestionsDiv.appendChild(label);
+                            tier2QuestionsDiv.appendChild(document.createElement('br'));
+                            tier2QuestionsDiv.appendChild(input);
+                            tier2QuestionsDiv.appendChild(document.createElement('br'));
+                        }
+                        tier2Div.style.display = "block";
+                    } else {
+                        document.getElementById('normal-diagnosis-div').style.display = "block";
+                    }
+                } else {
+                    tier1ResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                tier1ResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+
+        // --- Normal Mode Tier 2 ---
+        const tier2Form = document.getElementById('normal-tier2-form');
+        const tier2ResultDiv = document.getElementById('normal-tier2-result');
+        const tier3Div = document.getElementById('normal-tier3-div');
+
+        tier2Form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            tier2ResultDiv.textContent = 'Processing Tier 2...';
+            const tier2FormData = new FormData(tier2Form);
+            try {
+                const response = await fetch('/normal/process_tier2', {
+                    method: 'POST',
+                    body: tier2FormData
+                });
+                const result = await response.json();
+                if(response.ok){
+                    tier2ResultDiv.textContent = "Tier 2 completed.";
+                    const tier3QuestionsDiv = document.getElementById('normal-tier3-questions');
+                    tier3QuestionsDiv.innerHTML = "";
+                    if(result.tier3_questions && Object.keys(result.tier3_questions).length > 0){
+                        for(const key in result.tier3_questions){
+                            let questionText = result.tier3_questions[key];
+                            if(typeof questionText !== "string") {
+                                questionText = String(questionText);
+                            }
+                            let questions = questionText.includes(',') ? questionText.split(',') : [questionText];
+                            questions.forEach((q, index) => {
+                                const trimmedQ = String(q).trim();
+                                const div = document.createElement('div');
+                                const label = document.createElement('label');
+                                label.textContent = trimmedQ;
+                                div.appendChild(label);
+                                div.appendChild(document.createElement('br'));
+                                
+                                const radioY = document.createElement('input');
+                                radioY.type = 'radio';
+                                radioY.name = `${key}_${index}`;
+                                radioY.value = 'y';
+                                const labelY = document.createElement('label');
+                                labelY.textContent = 'Yes';
+                                
+                                const radioN = document.createElement('input');
+                                radioN.type = 'radio';
+                                radioN.name = `${key}_${index}`;
+                                radioN.value = 'n';
+                                const labelN = document.createElement('label');
+                                labelN.textContent = 'No';
+                                
+                                div.appendChild(radioY);
+                                div.appendChild(labelY);
+                                div.appendChild(radioN);
+                                div.appendChild(labelN);
+                                div.appendChild(document.createElement('br'));
+                                
+                                tier3QuestionsDiv.appendChild(div);
+                            });
+                        }
+                    } else {
+                        tier3QuestionsDiv.innerHTML = "<p>No follow-up questions returned. You may add additional details if needed.</p>";
+                    }
+                    tier3Div.style.display = "block";
+                    document.getElementById('normal-diagnosis-div').style.display = "none";
+                } else {
+                    tier2ResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                tier2ResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+
+        // --- Normal Mode Tier 3 ---
+        const tier3Form = document.getElementById('normal-tier3-form');
+        const tier3ResultDiv = document.getElementById('normal-tier3-result');
+
+        tier3Form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            tier3ResultDiv.textContent = 'Processing Tier 3...';
+            const tier3FormData = new FormData(tier3Form);
+            try {
+                const response = await fetch('/normal/process_tier3', {
+                    method: 'POST',
+                    body: tier3FormData
+                });
+                const result = await response.json();
+                if(response.ok){
+                    tier3ResultDiv.textContent = "Tier 3 completed.";
+                    document.getElementById('normal-diagnosis-div').style.display = "block";
+                } else {
+                    tier3ResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                tier3ResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+
+        // --- Normal Mode Final Diagnosis ---
+        const diagnoseBtn = document.getElementById('normal-diagnose-btn');
+        const diagnosisResultDiv = document.getElementById('normal-diagnosis-result');
+
+        diagnoseBtn.addEventListener('click', async () => {
+            diagnosisResultDiv.textContent = 'Getting final diagnosis...';
+            try {
+                const response = await fetch('/normal/diagnose', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                if(response.ok){
+                    diagnosisResultDiv.textContent = `Diagnosis: ${result.diagnoses || result.message}`;
+                } else {
+                    diagnosisResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                diagnosisResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+
+        // --- DCG Mode Tier 1 ---
+        const dcgTier1Form = document.getElementById('dcg-tier1-form');
+        const dcgTier1ResultDiv = document.getElementById('dcg-tier1-result');
+        const dcgTier2Div = document.getElementById('dcg-tier2-div');
+
+        dcgTier1Form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            dcgTier1ResultDiv.textContent = 'Processing Tier 1...';
+            const formData = new FormData(dcgTier1Form);
+            try {
+                const response = await fetch('/dcg/process_tier1', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(response.ok){
+                    dcgTier1ResultDiv.textContent = "Tier 1 completed.";
+                    if(result.tier2_questions && Object.keys(result.tier2_questions).length > 0){
+                        const dcgTier2QuestionsDiv = document.getElementById('dcg-tier2-questions');
+                        dcgTier2QuestionsDiv.innerHTML = "";
+                        for(const [symptom, question] of Object.entries(result.tier2_questions)){
+                            const label = document.createElement('label');
+                            label.textContent = question;
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.name = symptom + "_detail";
+                            dcgTier2QuestionsDiv.appendChild(label);
+                            dcgTier2QuestionsDiv.appendChild(document.createElement('br'));
+                            dcgTier2QuestionsDiv.appendChild(input);
+                            dcgTier2QuestionsDiv.appendChild(document.createElement('br'));
+                        }
+                        dcgTier2Div.style.display = "block";
+                    } else {
+                        document.getElementById('dcg-diagnosis-div').style.display = "block";
+                    }
+                } else {
+                    dcgTier1ResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                dcgTier1ResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+
+        // --- DCG Mode Tier 2 ---
+        const dcgTier2Form = document.getElementById('dcg-tier2-form');
+        const dcgTier2ResultDiv = document.getElementById('dcg-tier2-result');
+        const dcgTier3Div = document.getElementById('dcg-tier3-div');
+
+        dcgTier2Form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            dcgTier2ResultDiv.textContent = 'Processing Tier 2...';
+            const formData = new FormData(dcgTier2Form);
+            try {
+                const response = await fetch('/dcg/process_tier2', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(response.ok){
+                    dcgTier2ResultDiv.textContent = "Tier 2 completed.";
+                    const dcgTier3QuestionsDiv = document.getElementById('dcg-tier3-questions');
+                    dcgTier3QuestionsDiv.innerHTML = "";
+                    if(result.tier3_questions && Object.keys(result.tier3_questions).length > 0){
+                        for(const key in result.tier3_questions){
+                            let questionText = result.tier3_questions[key];
+                            if(typeof questionText !== "string"){
+                                questionText = String(questionText);
+                            }
+                            let questions = questionText.includes(',') ? questionText.split(',') : [questionText];
+                            questions.forEach((q, index) => {
+                                const trimmedQ = String(q).trim();
+                                const div = document.createElement('div');
+                                const label = document.createElement('label');
+                                label.textContent = trimmedQ;
+                                div.appendChild(label);
+                                div.appendChild(document.createElement('br'));
+                                
+                                const radioY = document.createElement('input');
+                                radioY.type = 'radio';
+                                radioY.name = `${key}_${index}`;
+                                radioY.value = 'y';
+                                const labelY = document.createElement('label');
+                                labelY.textContent = 'Yes';
+                                
+                                const radioN = document.createElement('input');
+                                radioN.type = 'radio';
+                                radioN.name = `${key}_${index}`;
+                                radioN.value = 'n';
+                                const labelN = document.createElement('label');
+                                labelN.textContent = 'No';
+                                
+                                div.appendChild(radioY);
+                                div.appendChild(labelY);
+                                div.appendChild(radioN);
+                                div.appendChild(labelN);
+                                div.appendChild(document.createElement('br'));
+                                
+                                dcgTier3QuestionsDiv.appendChild(div);
+                            });
+                        }
+                    } else {
+                        dcgTier3QuestionsDiv.innerHTML = "<p>No follow-up questions returned. You may add additional details if needed.</p>";
+                    }
+                    dcgTier3Div.style.display = "block";
+                    document.getElementById('dcg-diagnosis-div').style.display = "none";
+                } else {
+                    dcgTier2ResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                dcgTier2ResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+
+        // --- DCG Mode Tier 3 ---
+        const dcgTier3Form = document.getElementById('dcg-tier3-form');
+        const dcgTier3ResultDiv = document.getElementById('dcg-tier3-result');
+
+        dcgTier3Form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            dcgTier3ResultDiv.textContent = 'Processing Tier 3...';
+            const formData = new FormData(dcgTier3Form);
+            try {
+                const response = await fetch('/dcg/process_tier3', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(response.ok){
+                    dcgTier3ResultDiv.textContent = "Tier 3 completed.";
+                    document.getElementById('dcg-diagnosis-div').style.display = "block";
+                } else {
+                    dcgTier3ResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                dcgTier3ResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+
+        // --- DCG Final Diagnosis ---
+        const dcgDiagnoseBtn = document.getElementById('dcg-diagnose-btn');
+        const dcgDiagnosisResultDiv = document.getElementById('dcg-diagnosis-result');
+
+        dcgDiagnoseBtn.addEventListener('click', async () => {
+            dcgDiagnosisResultDiv.textContent = 'Getting final diagnosis...';
+            try {
+                const response = await fetch('/dcg/diagnose', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                if(response.ok){
+                    dcgDiagnosisResultDiv.textContent = `Diagnosis: ${result.diagnoses || result.message}`;
+                } else {
+                    dcgDiagnosisResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
+                }
+            } catch (error) {
+                dcgDiagnosisResultDiv.textContent = `Fetch Error: ${error}`;
+            }
+        });
+    </script>
 </body>
 </html>

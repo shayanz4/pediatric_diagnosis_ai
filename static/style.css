@@ -1,38 +1,96 @@
-.section {
-    background-color: #f8f9fa;
+body {
+    font-family: sans-serif;
     padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    background-color: #f4f7f6;
+    color: #333;
 }
 
-.form-group {
+h1, h2 {
+    color: #0056b3; /* A calming blue */
+}
+
+.tab-container {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #e9eef2;
     margin-bottom: 15px;
+    border-radius: 5px;
 }
 
-.symptom-card {
+.tab-container button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+    border-right: 1px solid #ccc;
+}
+.tab-container button:last-child {
+    border-right: none;
+}
+
+.tab-container button:hover {
+    background-color: #ddd;
+}
+
+.tab-container button.active {
+    background-color: #007bff; /* Active tab blue */
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-top: none;
     background-color: white;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 4px;
+    border-radius: 0 0 5px 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.diagnosis-item {
-    display: flex;
-    justify-content: space-between;
+.symptom-list label {
+    display: block; /* Each checkbox on a new line */
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+textarea {
+    width: 90%;
     padding: 10px;
-    border-bottom: 1px solid #dee2e6;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    resize: vertical; /* Allow vertical resizing */
 }
 
-.probability-bar {
-    height: 20px;
-    background-color: #007bff;
+button[type="submit"] {
+    background-color: #28a745; /* Green */
+    color: white;
+    padding: 10px 20px;
+    border: none;
     border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
 }
 
-.department-suggestion {
-    background-color: #e9ecef;
-    padding: 15px;
-    border-radius: 4px;
+button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+.result-box {
     margin-top: 20px;
+    padding: 15px;
+    border: 1px dashed #ccc;
+    background-color: #eef;
+    border-radius: 4px;
+    min-height: 30px;
+    font-weight: bold;
 }
