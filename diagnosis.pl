@@ -17,10 +17,6 @@ has_symptom_severity(Symptom, Level) :-
     has_symptom(Symptom, _),
     user_response(Symptom, Level).
 
-symptom_severity(high, 4..5).
-symptom_severity(moderate, 2..3).
-symptom_severity(mild, 0..1).
-
 adaptive_symptom(fever, [high_grade_fever, persistent_fever, chills, night_sweats]).
 adaptive_symptom(cough, [dry_cough, wheezing, worsens_at_night, productive_cough]).
 adaptive_symptom(rash, [itchy_rash, rash_after_fever, rash_localized_or_widespread, peeling_skin]).

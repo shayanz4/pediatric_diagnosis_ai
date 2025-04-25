@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pediatric Diagnosis System</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Bootstrap CSS (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container my-4">
+    <h1 class="mb-4">Pediatric Diagnosis System</h1>
+    <!-- Tabs for mode selection -->
+    <ul class="nav nav-tabs" id="modeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="normal-tab" data-bs-toggle="tab" data-bs-target="#normal-mode" type="button" role="tab">Normal Mode</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="dcg-tab" data-bs-toggle="tab" data-bs-target="#dcg-mode" type="button" role="tab">DCG Mode</button>
+        </li>
+    </ul>
+    <div class="tab-content" id="modeTabsContent">
+        <!-- Normal Mode Tab -->
+        <div class="tab-pane fade show active" id="normal-mode" role="tabpanel">
+            <div id="normal-mode-content" class="mt-4">
+                <div id="normal-tier1-section" class="section">
+                    <h3>Normal Mode: Tier 1</h3>
+                    <div class="form-group">
+                        <label for="normal-symptoms">Enter symptoms (comma or space separated):</label>
+                        <input type="text" id="normal-symptoms" class="form-control">
+                    </div>
+                    <button class="btn btn-primary mt-2" onclick="processNormalTier1()">Submit Tier 1</button>
+                </div>
+                <div id="normal-tier2-section" class="section d-none">
+                    <form id="normal-tier2-form"></form>
+                    <button class="btn btn-primary mt-2" onclick="processNormalTier2()">Submit Tier 2</button>
+                </div>
+                <div id="normal-tier3-section" class="section d-none">
+                    <form id="normal-tier3-form"></form>
+                    <button class="btn btn-primary mt-2" onclick="getNormalDiagnosis()">Get Diagnosis</button>
+                </div>
+                <div id="normal-results-section" class="section d-none">
+                    <h3>Diagnosis Results</h3>
+                    <div id="normal-diagnosis-results"></div>
+                    <div id="normal-department-suggestion"></div>
+                </div>
+            </div>
+        </div>
+        <!-- DCG Mode Tab -->
+        <div class="tab-pane fade" id="dcg-mode" role="tabpanel">
+            <div id="dcg-mode-content" class="mt-4">
+                <div id="dcg-tier1-section" class="section">
+                    <h3>DCG Mode: Tier 1</h3>
+                    <div class="form-group">
+                        <label for="dcg-symptoms">Describe symptoms:</label>
+                        <input type="text" id="dcg-symptoms" class="form-control">
+                    </div>
+                    <button class="btn btn-primary mt-2" onclick="processDcgTier1()">Submit Tier 1</button>
+                </div>
+                <div id="dcg-tier2-section" class="section d-none">
+                    <form id="dcg-tier2-form"></form>
+                    <button class="btn btn-primary mt-2" onclick="processDcgTier2()">Submit Tier 2</button>
+                </div>
+                <div id="dcg-tier3-section" class="section d-none">
+                    <form id="dcg-tier3-form"></form>
+                    <button class="btn btn-primary mt-2" onclick="getDcgDiagnosis()">Get Diagnosis</button>
+                </div>
+                <div id="dcg-results-section" class="section d-none">
+                    <h3>Diagnosis Results</h3>
+                    <div id="dcg-diagnosis-results"></div>
+                    <div id="dcg-department-suggestion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/script.js"></script>
+</body>
+</html>
