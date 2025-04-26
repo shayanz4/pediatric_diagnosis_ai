@@ -1,20 +1,16 @@
 import os
 from pyswip import Prolog
 
-# ---------------------------------------------------------------------------
-# Initialise Prolog and consult KB files
-# ---------------------------------------------------------------------------
+# Set up Prolog engine and load our knowledge bases
 prolog = Prolog()
 prolog.consult("diagnosis.pl")
-prolog.consult("dcg_rules.pl")  # still available if you want Mode 2 later
+prolog.consult("dcg_rules.pl")  # We'll need this for natural language mode
 
-# Wipe any facts that might be lingering from a previous run (handy in REPL)
+# Clear any lingering facts from previous runs
 prolog.query("retractall(user_response(_, _)).")
 prolog.query("retractall(has_symptom(_, _)).")
 
-# ---------------------------------------------------------------------------
-# Utility tables – *unchanged*
-# ---------------------------------------------------------------------------
+# Disease rule complexity - helps us calculate diagnosis confidence
 rule_lengths = {
     "common_cold": 4, "flu": 5, "strep_throat": 4, "ear_infection": 4,
     "bronchitis": 4, "bronchiolitis": 4, "hand_foot_mouth": 3,
@@ -24,6 +20,7 @@ rule_lengths = {
     "whooping_cough": 3, "fifth_disease": 3
 }
 
+# Which department should handle each condition
 department_map = {
     "common_cold": "General Pediatrics", "flu": "General Pediatrics",
     "strep_throat": "ENT", "ear_infection": "ENT",
@@ -37,22 +34,17 @@ department_map = {
     "fifth_disease": "Dermatology"
 }
 
-# ---------------------------------------------------------------------------
-# Tier‑1 screening set‑up (preliminary yes/no)
-# ---------------------------------------------------------------------------
+# Tier 1: Basic symptoms we check first
 tier1_symptoms = [
     "fever", "cough", "rash", "vomiting", "diarrhea", "runny_nose", "fatigue"
 ]
 
-# ---------------------------------------------------------------------------
-# Tier‑2 adaptive questions mapped *directly* to atoms in diagnosis.pl.
-# Each entry: (PrologAtom, Prompt)
-# ---------------------------------------------------------------------------
-
+# Tier 2: Follow-up questions for each primary symptom
+# Format: (symptom_id, "Question to ask")
 tier2_questions = {
     "fever": [
-        ("high_grade_fever",      "Is the fever high‑grade (>39 °C)? (y/n)"),
-        ("persistent_fever",      "Has the fever lasted more than 3 days? (y/n)"),
+        ("high_grade_fever",      "Is the fever high‑grade (>39 °C)? (y/n)"),
+        ("persistent_fever",      "Has the fever lasted more than 3 days? (y/n)"),
         ("chills",                "Is the child experiencing chills? (y/n)"),
         ("night_sweats",          "Are there night sweats? (y/n)")
     ],
@@ -89,10 +81,8 @@ tier2_questions = {
     ]
 }
 
-# ---------------------------------------------------------------------------
-# Tier‑3 deep‑dive triggers and questions. Same pattern as Tier‑2.
-# ---------------------------------------------------------------------------
-
+# Tier 3: Specific questions when certain symptoms appear together
+# Helps us differentiate between similar conditions
 tier3_triggers = {
     ("fever", "rash"): [
         ("measles_path",        "Did the rash start on the face and spread down? (y/n)"),
@@ -110,12 +100,10 @@ tier3_triggers = {
     ]
 }
 
-# ----------------------------------------------------------------------------
-# Helper input functions
-# ----------------------------------------------------------------------------
+# Helper functions for getting user input
 
 def ask_yes_no(prompt: str) -> str:
-    """Return 'yes' or 'no'."""
+    """Simple yes/no question handler"""
     while True:
         resp = input(prompt + " ").strip().lower()
         if resp in {"y", "yes"}:
@@ -126,42 +114,37 @@ def ask_yes_no(prompt: str) -> str:
 
 
 def update_progress(done_pct, total_progress=[0]):
+    """Show the user how far along they are"""
     total_progress[0] += done_pct
     pct = min(total_progress[0], 100)
     print(f"✅ You're {pct}% done.")
 
-# ----------------------------------------------------------------------------
-# Tier 1 – preliminary yes/no
-# ----------------------------------------------------------------------------
+# Tier 1: First round of basic symptom screening
 
 def tier1():
-    print("\nTier 1 – preliminary screening (y/n)")
+    print("\nTier 1 – preliminary screening (y/n)")
     for s in tier1_symptoms:
         ans = ask_yes_no(f"Does the child have {s.replace('_', ' ')}? (y/n):")
         if ans == "yes":
             prolog.assertz(f"has_symptom({s}, 1)")
     update_progress(20)
 
-# ----------------------------------------------------------------------------
-# Tier 2 – adaptive questions (for each positive Tier‑1 symptom)
-# ----------------------------------------------------------------------------
+# Tier 2: Ask follow-up questions about each positive symptom
 
 def tier2():
-    print("\nTier 2 – adaptive questions")
+    print("\nTier 2 – adaptive questions")
     for primary in tier1_symptoms:
-        # Only dive deeper if we asserted the primary symptom
+        # Only ask about symptoms that were reported in Tier 1
         if list(prolog.query(f"has_symptom({primary}, _)")):
             for atom, prompt in tier2_questions.get(primary, []):
                 ans = ask_yes_no(prompt)
                 prolog.assertz(f"user_response({atom}, {ans})")
     update_progress(40)
 
-# ----------------------------------------------------------------------------
-# Tier 3 – deep differentiating questions (trigger pairs)
-# ----------------------------------------------------------------------------
+# Tier 3: Ask specific questions when certain symptom combinations appear
 
 def tier3():
-    print("\nTier 3 – deep‑dive questions")
+    print("\nTier 3 – deep‑dive questions")
     something_asked = False
     for trigger_pair, qlist in tier3_triggers.items():
         if all(list(prolog.query(f"has_symptom({t}, _)")) for t in trigger_pair):
@@ -173,9 +156,7 @@ def tier3():
         print("No deep‑dive questions needed.")
     update_progress(40)
 
-# ----------------------------------------------------------------------------
-# Diagnosis summary
-# ----------------------------------------------------------------------------
+# Calculate and display diagnosis results
 
 def diagnose():
     print("\nDiagnosis summary:")
@@ -199,11 +180,10 @@ def diagnose():
     dept = department_map.get(likely, "General Pediatrics")
     print(f"\n➡️ Suggested department: {dept}")
 
-# ----------------------------------------------------------------------------
-# Main routine – only Mode 1 implemented for now
-# ----------------------------------------------------------------------------
+# Main program flow
+
 if __name__ == "__main__":
-    print("Welcome to the Pediatric Diagnosis System (Mode 1 – guided)")
+    print("Welcome to the Pediatric Diagnosis System (Mode 1 – guided)")
     tier1()
     tier2()
     tier3()

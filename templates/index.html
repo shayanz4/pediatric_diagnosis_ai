@@ -267,7 +267,21 @@
                 });
                 const result = await response.json();
                 if(response.ok){
-                    diagnosisResultDiv.textContent = `Diagnosis: ${result.diagnoses || result.message}`;
+                    if (result.error) {
+                        diagnosisResultDiv.textContent = `Error: ${result.error}. ${result.message || ''}`;
+                    } else if (result.diagnoses && result.diagnoses.length > 0) {
+                        let html = `<h3>Diagnosis Results:</h3>`;
+                        html += `<p><strong>Department:</strong> ${result.department || 'Not specified'}</p>`;
+                        html += `<h4>Potential Diagnoses:</h4><ul>`;
+                        result.diagnoses.forEach(diagnosis => {
+                            const probability = result.probabilities[diagnosis] || 'Unknown';
+                            html += `<li>${diagnosis} (${probability})</li>`;
+                        });
+                        html += `</ul>`;
+                        diagnosisResultDiv.innerHTML = html;
+                    } else {
+                        diagnosisResultDiv.textContent = "No diagnosis available. Please consult a doctor.";
+                    }
                 } else {
                     diagnosisResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
                 }
@@ -426,7 +440,21 @@
                 });
                 const result = await response.json();
                 if(response.ok){
-                    dcgDiagnosisResultDiv.textContent = `Diagnosis: ${result.diagnoses || result.message}`;
+                    if (result.error) {
+                        dcgDiagnosisResultDiv.textContent = `Error: ${result.error}. ${result.message || ''}`;
+                    } else if (result.diagnoses && result.diagnoses.length > 0) {
+                        let html = `<h3>Diagnosis Results:</h3>`;
+                        html += `<p><strong>Department:</strong> ${result.department || 'Not specified'}</p>`;
+                        html += `<h4>Potential Diagnoses:</h4><ul>`;
+                        result.diagnoses.forEach(diagnosis => {
+                            const probability = result.probabilities[diagnosis] || 'Unknown';
+                            html += `<li>${diagnosis} (${probability})</li>`;
+                        });
+                        html += `</ul>`;
+                        dcgDiagnosisResultDiv.innerHTML = html;
+                    } else {
+                        dcgDiagnosisResultDiv.textContent = "No diagnosis available. Please consult a doctor.";
+                    }
                 } else {
                     dcgDiagnosisResultDiv.textContent = `Error: ${result.detail || 'Unknown error'}`;
                 }

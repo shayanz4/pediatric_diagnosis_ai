@@ -11,11 +11,14 @@ class DiagnosisEngine:
         else:  # dcg mode
             self.prolog.consult("dcg_rules.pl")
         self._reset_state()
+        # Store user responses for easier access in diagnosis
+        self.responses = {}
 
     def _reset_state(self):
         """Reset all Prolog state between diagnoses"""
         self.prolog.query("retractall(user_response(_, _)).")
         self.prolog.query("retractall(has_symptom(_, _)).")
+        self.responses = {}
 
     def process_natural_language(self, text: str) -> List[str]:
         if self.mode == "dcg":
@@ -46,31 +49,41 @@ class DiagnosisEngine:
         try:
             safe_value = value.replace("'", "''")  # Escape single quotes for Prolog
             self.prolog.assertz(f"user_response({key},'{safe_value}')")
+            # Also store in our Python dictionary for easier access
+            self.responses[key] = value
         except Exception as e:
             print(f"Error adding response {key}: {e}")
 
-    def get_diagnosis(self) -> Tuple[List[Dict], Optional[str]]:
+    def get_diagnosis(self) -> Tuple[List[str], str, Dict[str, str]]:
         """Get diagnosis results based on symptoms and responses"""
         try:
             diagnoses = [d["Disease"] for d in self.prolog.query("diagnosis(Disease).")]
             # Filter and calculate based on RULE_LEN
             diagnoses = [d for d in diagnoses if d in RULE_LEN]
+            
             if not diagnoses:
-                return [], None
+                return [], None, {}
+                
             total = sum(RULE_LEN.get(d, 1) for d in diagnoses)
-            results = []
-            for d in diagnoses:
-                probability = RULE_LEN.get(d, 1) * 100 / total
-                results.append({
-                    "disease": d.replace('_', ' ').title(),
-                    "probability": round(probability, 1)
-                })
+            
+            # Create a list of disease names (formatted for display)
+            results = [d.replace('_', ' ').title() for d in diagnoses]
+            
+            # Find the most likely disease
             best = max(diagnoses, key=lambda d: RULE_LEN.get(d, 0))
             department = DEPT.get(best, "General Pediatrics")
-            return results, department
+            
+            # Create probability dictionary
+            probabilities = {}
+            for d in diagnoses:
+                probability = round(RULE_LEN.get(d, 1) * 100 / total, 1)
+                probabilities[d.replace('_', ' ').title()] = f"{probability}%"
+                
+            return results, department, probabilities
+            
         except Exception as e:
             print(f"Diagnosis error: {e}")
-            return [], None
+            return [], None, {}
 
 # Predefined mode‐independent constants
 T1 = ["fever", "cough", "rash", "vomiting", "diarrhea", "runny_nose", "fatigue"]
