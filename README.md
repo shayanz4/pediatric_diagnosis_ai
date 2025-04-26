@@ -1,6 +1,6 @@
 # Pediatric Diagnosis AI
 
-An AI-powered diagnostic system for pediatric conditions that uses Prolog rules and natural language processing to help identify possible diagnoses based on reported symptoms.
+An intelligent assistant for pediatric healthcare that combines expert-defined Prolog rules with natural language understanding to assess symptoms and suggest likely diagnoses. Designed to support early decision-making, the system processes both structured inputs and free-text descriptions to identify potential conditions and recommend relevant medical departments.
 
 ## Overview
 
@@ -9,9 +9,9 @@ This system provides two modes of interaction:
 - **DCG Mode**: A natural language processing approach where users can describe symptoms in free text
 
 The diagnostic process works in three tiers:
-1. **Tier 1**: Initial symptom identification
-2. **Tier 2**: Detailed symptom characterization
-3. **Tier 3**: Disease-specific differential questions
+1. **Tier 1**: Preliminary symptom identification
+2. **Tier 2**: Adaptive symptom characterization
+3. **Tier 3**: Deep Differentiating symptom questions
 
 ## Features
 
@@ -64,15 +64,15 @@ Access the web interface at: http://localhost:8000
 ### Normal Mode
 
 1. Select primary symptoms from the checklist
-2. Provide detailed information about each selected symptom
-3. Answer follow-up questions if prompted
+2. Answer detailed follow-up questions about each selected symptom
+3. Answer any additional detail questions (if applicable)
 4. View the diagnostic results
 
 ### DCG Mode (Natural Language)
 
-1. Describe all observed symptoms in natural language
-2. Provide detailed information about detected symptoms
-3. Answer follow-up questions if prompted
+1. Describe all the observed symptoms in natural language
+2. Answer follow-up questions about detected symptoms
+3. Answer any additional detail questions (if applicable)
 4. View the diagnostic results
 
 ## Technical Details
